@@ -9,9 +9,17 @@
     <script src="https://unpkg.com/phosphor-icons"></script>
   </head>
   <body>
-    <header>
-      
-    </header>
+    <section id="scoreboard">
+      <div>
+        <span>Player One: </span>
+        <span id="player-one-score"></span>
+      </div> 
+      <span>VS</span>
+      <div>
+        <span>Player Two: </span>
+        <span id="player-two-score"></span>
+      </div> 
+    </section>
 
     <h2 class="turn"></h2>
     <section id="gameboard">
@@ -25,5 +33,9 @@
       <div class="field"></div> 
       <div class="field"></div> 
     </section>   
+
+    <section id="round-counter">
+      Round <span id="current-round"></span>
+    </section>
   </body>
 </html>

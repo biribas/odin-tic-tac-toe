@@ -80,6 +80,16 @@ const displayController = (() => {
     _fields.forEach(field => field.classList.remove(_cross_class, _nought_class));
   }
 
+  const highlight = (...args) => {
+    for (let i = 0; i < args.length; i++)  {
+      _fields[args[i]].style.color = 'lightgreen';
+    }
+  }
+
+  const finishRound = () => {
+       
+  }
+
   return {
     addMark,
     clear

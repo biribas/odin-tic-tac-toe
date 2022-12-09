@@ -1,3 +1,10 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@500&family=Source+Code+Pro&display=swap');
+
+:root {
+  font-family: 'Source Code Pro', monospace;
+  user-select: none;
+}
+
 * {
   padding: 0;
   margin: 0;
@@ -5,9 +12,18 @@
 
 body {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
   min-height: 100vh;
+}
+
+#scoreboard {
+  font-size: 2rem;
+  font-weight: bolder;
+  padding-top: 2rem;
+  padding-bottom: 4rem;
+  display: flex;
+  gap: 4rem;
 }
 
 #gameboard {
@@ -15,7 +31,14 @@ body {
   grid-template-columns: repeat(3, 1fr);
 }
 
+#round-counter {
+  padding-top: 4rem;
+  font-size: 2rem;
+  font-weight: bolder;
+}
+
 .field {
+  cursor: pointer;
   display: flex;
   justify-content: center;
   align-items: center;
