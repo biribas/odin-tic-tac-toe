@@ -11,10 +11,84 @@
 }
 
 body {
+  min-height: 100vh;
+}
+
+.screen {
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-height: 100vh;
+}
+
+#title {
+  font-size: 4rem;
+  padding: 3rem;
+}
+
+#container {
+  display: flex;
+  align-items: center;
+  gap: 3rem;
+}
+
+.card {
+  --border-size: 2px;
+  --border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  font-size: 20rem;
+  border-radius: var(--border-radius);
+  box-shadow: 2px 2px 5px grey;
+  border: var(--border-size) grey solid;
+}
+
+.image {
+  padding: 1rem;
+}
+
+.versus {
+  font-size: 4rem;
+  font-weight: bolder;
+}
+
+.buttons {
+  display: flex;
+  height: 4rem;
+  width: 100%;
+  font-size: 1.5rem;
+  font-weight: bolder;
+  background-color: snow;
+  border-top: var(--border-size) grey solid;
+  border-bottom-right-radius: var(--border-radius);
+  border-bottom-left-radius: var(--border-radius);
+}
+
+.buttons > * {
+  flex: 1 1 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition-property: flex-grow;
+  transition-duration: 0.3s;
+  transition-timing-function: ease;
+  cursor: pointer;
+}
+
+.playerButton {
+  border-right: var(--border-size) solid grey;
+}
+
+.playerButton:hover {
+  flex-grow: 1.2;
+}
+
+.botButton:hover {
+  flex-grow: 1.2;
+}
+
+#game-screen {
+  display: none;
 }
 
 #scoreboard {
