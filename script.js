@@ -32,11 +32,12 @@ const Player = sign => {
 
 const gameBoard = (() => {
   const _board = new Array(9);
+  let _editable = true;
 
   const _getBoard = () => _board;
 
   const addMark = place => {
-    if (_board[place] != space.empty)
+    if (_board[place] != space.empty || !_editable)
       return;
 
     _board[place] = gameController.turn;
@@ -53,9 +54,14 @@ const gameBoard = (() => {
 
   const clear = () => _board.fill(space.empty);
 
+  const blockGameboard = () => _editable = false;
+  const unblockGameboard = () => _editable = true;
+
   const obj = {
     addMark,
-    clear
+    clear,
+    blockGameboard,
+    unblockGameboard
   }
 
   Object.defineProperty(obj, 'board', {get: _getBoard});
@@ -151,6 +157,7 @@ const gameController = (() => {
     }
 
     gameController.changeTurn();
+    gameBoard.blockGameboard();
     gameBoard.clear();
 
     if (score === _maxScore) {
@@ -228,6 +235,7 @@ const displayController = (() => {
   const finishRound = round => {
     setTimeout(() => {
       displayController.clear();
+      gameBoard.unblockGameboard();
       scoreboardController.changeTurn();
       scoreboardController.round = round;
     }, 1000);
