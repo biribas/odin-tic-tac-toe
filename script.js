@@ -199,24 +199,18 @@ const scoreboardController = (() => {
 
 
 const displayController = (() => {
-  const _cross_class = 'ph-x-bold';
-  const _nought_class = 'ph-circle-bold';
+  const _css_classes = ['ph-x-bold', 'ph-circle-bold'];
 
   const _fields = document.querySelectorAll('#gameboard .field');
   _fields.forEach((field, index) => field.addEventListener('click', gameBoard.addMark.bind(null, index)));
 
   const addMark = place => {
-    const turn = gameController.turn;
-    if (turn === space.cross) {
-      _fields[place].classList.add(_cross_class);
-    }
-    else if (turn === space.nought) {
-      _fields[place].classList.add(_nought_class);
-    }
+    const index = +(gameController.turn === space.nought);
+    _fields[place].classList.add(_css_classes[index]);
   }
 
   const clear = () => {
-    _fields.forEach(field => field.classList.remove(_cross_class, _nought_class));
+    _fields.forEach(field => field.classList.remove(_css_classes[0], _css_classes[1]));
   }
 
   const highlight = (...args) => {
