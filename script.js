@@ -44,11 +44,11 @@ const gameBoard = (() => {
 
     if (gameController.checkVictory(_board, place)) {
       gameController.finishRound();
-      displayController.finishRound();
     }
-
-    gameController.changeTurn();
-    scoreboardController.changeTurn();
+    else {
+      gameController.changeTurn();
+      scoreboardController.changeTurn();
+    }
   };
 
   const clear = () => _board.fill(space.empty);
@@ -150,8 +150,14 @@ const gameController = (() => {
       scoreboardController.playerTwoScore = score;
     }
 
+    gameController.changeTurn();
+    gameBoard.clear();
+
     if (score === _maxScore) {
       _finishGame();
+    }
+    else {
+      displayController.finishRound(++_round);
     }
   }
 
@@ -219,8 +225,12 @@ const displayController = (() => {
     }
   }
 
-  const finishRound = () => {
-     
+  const finishRound = round => {
+    setTimeout(() => {
+      displayController.clear();
+      scoreboardController.changeTurn();
+      scoreboardController.round = round;
+    }, 1000);
   }
 
   return {
