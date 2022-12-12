@@ -33,7 +33,11 @@ body {
 }
 
 .marked {
-  background-color: limegreen;
+  background-color: lightgreen;
+}
+
+.victory {
+  color: lightgreen;
 }
 
 #gameboard {

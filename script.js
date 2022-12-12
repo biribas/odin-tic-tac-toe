@@ -224,11 +224,12 @@ const displayController = (() => {
 
   const clear = () => {
     _fields.forEach(field => field.classList.remove(_css_classes[0], _css_classes[1]));
+    _fields.forEach(field => field.classList.remove('victory'));
   }
 
   const highlight = (...args) => {
     for (let i = 0; i < args.length; i++)  {
-      _fields[args[i]].style.color = 'lightgreen';
+      _fields[args[i]].classList.add('victory');
     }
   }
 
@@ -238,7 +239,7 @@ const displayController = (() => {
       gameBoard.unblockGameboard();
       scoreboardController.changeTurn();
       scoreboardController.round = round;
-    }, 1000);
+    }, 1500);
   }
 
   return {
