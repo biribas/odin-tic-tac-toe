@@ -40,6 +40,10 @@ body {
   color: lightgreen;
 }
 
+.draw {
+  color: #FFD300;
+}
+
 #gameboard {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

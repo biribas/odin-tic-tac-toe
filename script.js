@@ -44,7 +44,10 @@ const gameBoard = (() => {
     displayController.addMark(place);
 
     if (gameController.checkVictory(_board, place)) {
-      gameController.finishRound();
+      gameController.handleVictory();
+    }
+    else if (gameController.checkDraw(_board)) {
+      gameController.handleDraw();
     }
     else {
       gameController.changeTurn();
@@ -86,7 +89,7 @@ const gameController = (() => {
     const isWon = board[k] === board[k + 1] && board[k + 1] === board[k + 2];
 
     if (isWon) {
-      displayController.highlight(k, k + 1, k + 2);
+      displayController.highlightVictory(k, k + 1, k + 2);
     }
 
     return isWon;
@@ -97,7 +100,7 @@ const gameController = (() => {
     const isWon = board[k] === board[k + 3] && board[k + 3] === board[k + 6];
 
     if (isWon) {
-      displayController.highlight(k, k + 3, k + 6);
+      displayController.highlightVictory(k, k + 3, k + 6);
     }
 
     return isWon;
@@ -112,7 +115,7 @@ const gameController = (() => {
 
     for (let i = 0; i < counter; i++, k += 2) {
       if (board[k] === board[4] && board[4] === board[8 - k]) {
-        displayController.highlight(k, 4, 8 - k);
+        displayController.highlightVictory(k, 4, 8 - k);
         return true;
       }
     }
@@ -123,6 +126,45 @@ const gameController = (() => {
   const checkVictory = (board, lastMove) => {
     const args = [board, lastMove];
     return _checkRows(...args) || _checkColumns(...args) || _checkDiagonals(...args);
+  }
+
+  const checkDraw = board => !board.some(field => field === space.empty);
+
+  const handleVictory = () => {
+    let score;
+    
+    if (_player1.sign === _turn) {
+      score = _player1.increaseScore();
+      scoreboardController.playerOneScore = score;
+    }
+    else {
+      score = _player2.increaseScore();
+      scoreboardController.playerTwoScore = score;
+    }
+
+    if (score === _maxScore) {
+      _finishGame();
+    }
+    else {
+      displayController.finishRound(++_round);
+      _finishRound();
+    }
+  }
+
+  const handleDraw = () => {
+    displayController.highlightDraw();
+    displayController.finishRound(++_round);
+    _finishRound();
+  }
+
+  const _finishRound = () => {
+    gameController.changeTurn();
+    gameBoard.blockGameboard();
+    gameBoard.clear();
+  }
+
+  const _finishGame = () => {
+
   }
 
   const startGame = () => {
@@ -140,41 +182,15 @@ const gameController = (() => {
     displayController.clear();
   }
 
-  const _finishGame = () => {
-
-  }
-
-  const finishRound = () => {
-    let score;
-    
-    if (_player1.sign === _turn) {
-      score = _player1.increaseScore();
-      scoreboardController.playerOneScore = score;
-    }
-    else {
-      score = _player2.increaseScore();
-      scoreboardController.playerTwoScore = score;
-    }
-
-    gameController.changeTurn();
-    gameBoard.blockGameboard();
-    gameBoard.clear();
-
-    if (score === _maxScore) {
-      _finishGame();
-    }
-    else {
-      displayController.finishRound(++_round);
-    }
-  }
-
   const changeTurn = () => _turn = _turn === space.cross ? space.nought : space.cross;
 
   const obj = {
     startGame,
     changeTurn,
     checkVictory,
-    finishRound
+    checkDraw,
+    handleDraw,
+    handleVictory
   }
 
   Object.defineProperty(obj, 'turn', {get: _getTurn});
@@ -214,7 +230,8 @@ const scoreboardController = (() => {
 const displayController = (() => {
   const _css_classes = ['ph-x-bold', 'ph-circle-bold'];
 
-  const _fields = document.querySelectorAll('#gameboard .field');
+  const _gameBoard = document.getElementById('gameboard');
+  const _fields = _gameBoard.querySelectorAll('.field');
   _fields.forEach((field, index) => field.addEventListener('click', gameBoard.addMark.bind(null, index)));
 
   const addMark = place => {
@@ -225,12 +242,17 @@ const displayController = (() => {
   const clear = () => {
     _fields.forEach(field => field.classList.remove(_css_classes[0], _css_classes[1]));
     _fields.forEach(field => field.classList.remove('victory'));
+    _gameBoard.classList.remove('draw');
   }
 
-  const highlight = (...args) => {
+  const highlightVictory = (...args) => {
     for (let i = 0; i < args.length; i++)  {
       _fields[args[i]].classList.add('victory');
     }
+  }
+
+  const highlightDraw = () => {
+    _gameBoard.classList.add('draw');
   }
 
   const finishRound = round => {
@@ -242,11 +264,17 @@ const displayController = (() => {
     }, 1500);
   }
 
+  const finishGame = () => {
+
+  }
+
   return {
     addMark,
     clear,
-    highlight,
-    finishRound
+    highlightVictory,
+    highlightDraw,
+    finishRound,
+    finishGame
   }
 })();
 
