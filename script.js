@@ -48,6 +48,7 @@ const gameBoard = (() => {
     }
 
     gameController.changeTurn();
+    scoreboardController.changeTurn();
   };
 
   const clear = () => _board.fill(space.empty);
@@ -127,6 +128,7 @@ const gameController = (() => {
 
     _turn = _player1.sign;
     scoreboardController.round = _round;
+    scoreboardController.changeTurn();
 
     gameBoard.clear();
     displayController.clear();
@@ -169,16 +171,24 @@ const gameController = (() => {
 
 
 const scoreboardController = (() => {
-  const _playerOneScore = document.getElementById('player-one-score');
-  const _playerTwoScore = document.getElementById('player-two-score');
+  const players = document.querySelectorAll('.player');
+  const _playerOneScore = document.querySelector('#player-one .score');
+  const _playerTwoScore = document.querySelector('#player-two .score');
   const _roundCounter = document.getElementById('current-round');
 
   const _setPlayerOneScore = score => _playerOneScore.innerText = score;   
   const _setPlayerTwoScore = score => _playerTwoScore.innerText = score;   
 
   const _setRound = round => _roundCounter.innerText = round;
+  
+  const changeTurn = () => {
+    const index = +(gameController.turn === space.nought);
 
-  const obj = {}
+    players[index].classList.add('marked');
+    players[index ^ 1].classList.remove('marked');
+  }
+
+  const obj = {changeTurn}
 
   Object.defineProperty(obj, 'playerOneScore', {set: _setPlayerOneScore});
   Object.defineProperty(obj, 'playerTwoScore', {set: _setPlayerTwoScore});
@@ -216,7 +226,7 @@ const displayController = (() => {
   }
 
   const finishRound = () => {
-       
+     
   }
 
   return {

@@ -23,7 +23,17 @@ body {
   padding-top: 2rem;
   padding-bottom: 4rem;
   display: flex;
-  gap: 4rem;
+  gap: 6rem;
+}
+
+.player {
+  padding: 1rem;
+  border-radius: 5rem;
+  box-shadow: 2px 2px 5px grey;
+}
+
+.marked {
+  background-color: limegreen;
 }
 
 #gameboard {
