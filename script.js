@@ -91,7 +91,7 @@ const gameController = (() => {
   let _player2;
 
   let _turn;
-  let _round = 1;
+  let _currentRound;
 
   const _getTurn = () => _turn;
 
@@ -180,7 +180,7 @@ const gameController = (() => {
     scoreboardController.finishGame();
   }
 
-  const _setPlayersNames = () => {
+  const _setScoreBoardNames = () => {
     const names = ['Player', 'Bot'];
 
     scoreboardController.playerOne.name = names[+_player1.isBot];
@@ -192,38 +192,50 @@ const gameController = (() => {
     }
   }
 
-  const _setPlayersScores = () => {
-    scoreboardController.playerOne.score = _player1.score;
-    scoreboardController.playerTwo.score = _player2.score;
-  }
-
   const startGame = (player1, player2) => {
     _player1 = Player(space.cross, player1);
     _player2 = Player(space.nought, player2);
 
-    _setPlayersNames();
-    _setPlayersScores();
+    _setScoreBoardNames();
 
+    _resetGame();
+    menuController.hide();
+    displayController.show();
+  }
+
+  const _resetGame = () => {
+    scoreboardController.playerOne.score = 0;
+    scoreboardController.playerTwo.score = 0;
+
+    _currentRound = 1;
     _turn = _player1.sign;
-    scoreboardController.round = _round;
+
+    scoreboardController.round = _currentRound;
     scoreboardController.changeTurn();
 
     gameBoard.clear();
     displayController.clear();
+  }
 
-    menuController.hide();
-    displayController.show();
+  const playAgain = () => {
+    _player1.resetScore();
+    _player2.resetScore();
+
+    gameBoard.unblockGameboard();
+    displayController.playAgain();
+    _resetGame();
   }
 
   const changeTurn = () => _turn = _turn === space.cross ? space.nought : space.cross;
 
   const obj = {
-    startGame,
-    changeTurn,
     checkVictory,
     checkDraw,
     handleVictory,
-    handleDraw
+    handleDraw,
+    startGame,
+    playAgain,
+    changeTurn
   }
 
   Object.defineProperty(obj, 'turn', {get: _getTurn});
@@ -297,7 +309,9 @@ const displayController = (() => {
   const _gameBoard = document.getElementById('gameboard');
   const _fields = _gameBoard.querySelectorAll('.field');
   const _playAgain = document.getElementById('play-again');
+
   _fields.forEach((field, index) => field.addEventListener('click', () => gameBoard.addMark(index)));
+  _playAgain.addEventListener('click', gameController.playAgain);
 
   const addMark = place => {
     const index = +(gameController.turn === space.nought);
@@ -333,6 +347,10 @@ const displayController = (() => {
     _playAgain.classList.add('active');
   }
 
+  const playAgain = () => {
+    _playAgain.classList.remove('active');
+  }
+
   const hide = () => _gameScreen.classList.add('hidden');
 
   const show = () => _gameScreen.classList.remove('hidden');
@@ -344,6 +362,7 @@ const displayController = (() => {
     highlightDraw,
     finishRound,
     finishGame,
+    playAgain,
     hide,
     show
   }
