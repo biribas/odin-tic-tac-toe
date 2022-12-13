@@ -13,6 +13,8 @@
 button {
   border: none;
   background-color: transparent;
+  font-family: inherit;
+  font-weight: bolder;
 }
 
 body {
@@ -98,7 +100,7 @@ body {
   background-color: lightgrey;
 }
 
-button#start-game {
+button#start-game, button#play-again {
   transform: scale(0);
   font-size: 2rem;
   padding: .5rem;
@@ -111,11 +113,11 @@ button#start-game {
   transition-timing-function: ease-in-out;
 }
 
-button#start-game:hover {
+button#start-game:hover, button#play-again:hover {
   background-color: lightgrey;
 }
 
-button#start-game.active {
+button#start-game.active, button#play-again.active {
   transform: scale(1);
 }
 
@@ -136,6 +138,12 @@ button#start-game.active {
   padding: 1rem;
   border-radius: 5rem;
   box-shadow: 2px 2px 5px grey;
+  min-width: 8rem;
+  text-align: center;
+}
+
+.name::after {
+  content: ":";
 }
 
 .marked {
@@ -156,7 +164,8 @@ button#start-game.active {
 }
 
 #round-counter {
-  padding-top: 4rem;
+  padding-top: 2rem;
+  padding-bottom: 1rem;
   font-size: 2rem;
   font-weight: bolder;
 }

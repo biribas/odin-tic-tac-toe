@@ -85,7 +85,7 @@ const gameBoard = (() => {
 
 
 const gameController = (() => {
-  const _maxScore = 3;
+  const _maxScore = 1;
 
   let _player1;
   let _player2;
@@ -146,11 +146,11 @@ const gameController = (() => {
     
     if (_player1.sign === _turn) {
       score = _player1.increaseScore();
-      scoreboardController.playerOneScore = score;
+      scoreboardController.playerOne.score = score;
     }
     else {
       score = _player2.increaseScore();
-      scoreboardController.playerTwoScore = score;
+      scoreboardController.playerTwo.score = score;
     }
 
     if (score === _maxScore) {
@@ -175,15 +175,34 @@ const gameController = (() => {
   }
 
   const _finishGame = () => {
+    gameBoard.blockGameboard();
+    displayController.finishGame();
+    scoreboardController.finishGame();
+  }
 
+  const _setPlayersNames = () => {
+    const names = ['Player', 'Bot'];
+
+    scoreboardController.playerOne.name = names[+_player1.isBot];
+    scoreboardController.playerTwo.name = names[+_player2.isBot];
+
+    if (!(_player1.isBot ^ _player2.isBot)) {
+      scoreboardController.playerOne.name += ' One';
+      scoreboardController.playerTwo.name += ' Two';
+    }
+  }
+
+  const _setPlayersScores = () => {
+    scoreboardController.playerOne.score = _player1.score;
+    scoreboardController.playerTwo.score = _player2.score;
   }
 
   const startGame = (player1, player2) => {
     _player1 = Player(space.cross, player1);
     _player2 = Player(space.nought, player2);
 
-    scoreboardController.playerOneScore = _player1.score;
-    scoreboardController.playerTwoScore = _player2.score;
+    _setPlayersNames();
+    _setPlayersScores();
 
     _turn = _player1.sign;
     scoreboardController.round = _round;
@@ -214,26 +233,57 @@ const gameController = (() => {
 
 
 const scoreboardController = (() => {
-  const players = document.querySelectorAll('.player');
-  const _playerOneScore = document.querySelector('#player-one .score');
-  const _playerTwoScore = document.querySelector('#player-two .score');
-  const _roundCounter = document.getElementById('current-round');
+  const _players = document.querySelectorAll('.player');
 
-  const _setPlayerOneScore = score => _playerOneScore.innerText = score;   
-  const _setPlayerTwoScore = score => _playerTwoScore.innerText = score;   
+  const _roundCounter = document.getElementById('round-counter');
 
-  const _setRound = round => _roundCounter.innerText = round;
+  const _playerOne = {
+    name: document.querySelector('#player-one .name'),
+    score: document.querySelector('#player-one .score')
+  }
+  const _playerTwo = {
+    name: document.querySelector('#player-two .name'),
+    score: document.querySelector('#player-two .score')
+  }
+
+  const _getPlayerOneName = () => _playerOne.name.innerText;
+  const _getPlayerTwoName = () => _playerTwo.name.innerText;
+
+  const _setPlayerOneName = name => _playerOne.name.innerText = name;
+  const _setPlayerTwoName = name => _playerTwo.name.innerText = name;
+
+  const _setPlayerOneScore = score => _playerOne.score.innerText = score;   
+  const _setPlayerTwoScore = score => _playerTwo.score.innerText = score;   
+
+  const _setRound = round => _roundCounter.innerText = 'Round ' + round;
   
   const changeTurn = () => {
     const index = +(gameController.turn === space.nought);
-    players[index].classList.add('marked');
-    players[index ^ 1].classList.remove('marked');
+    _players[index].classList.add('marked');
+    _players[index ^ 1].classList.remove('marked');
   }
 
-  const obj = {changeTurn}
+  const finishGame = () => {
+    const winner = [..._players].find(player => player.classList.contains('marked')).querySelector('.name').innerText;
+    _roundCounter.innerText = `${winner} wins!`;
+  }
 
-  Object.defineProperty(obj, 'playerOneScore', {set: _setPlayerOneScore});
-  Object.defineProperty(obj, 'playerTwoScore', {set: _setPlayerTwoScore});
+  const playerOne = {};
+  Object.defineProperty(playerOne, 'name', {set: _setPlayerOneName, get: _getPlayerOneName});
+  Object.defineProperty(playerOne, 'score', {set: _setPlayerOneScore});
+
+  const playerTwo = {};
+  Object.defineProperty(playerTwo, 'name', {set: _setPlayerTwoName, get: _getPlayerTwoName});
+  Object.defineProperty(playerTwo, 'score', {set: _setPlayerTwoScore});
+
+  const obj = {
+    changeTurn,
+    finishGame,
+    playerOne,
+    playerTwo
+  }
+
+  Object.defineProperty(obj, 'playerTwoName', {set: _setPlayerTwoScore});
   Object.defineProperty(obj, 'round', {set: _setRound});
 
   return obj;
@@ -246,7 +296,8 @@ const displayController = (() => {
   const _gameScreen = document.getElementById('game-screen');
   const _gameBoard = document.getElementById('gameboard');
   const _fields = _gameBoard.querySelectorAll('.field');
-  _fields.forEach((field, index) => field.addEventListener('click', gameBoard.addMark.bind(null, index)));
+  const _playAgain = document.getElementById('play-again');
+  _fields.forEach((field, index) => field.addEventListener('click', () => gameBoard.addMark(index)));
 
   const addMark = place => {
     const index = +(gameController.turn === space.nought);
@@ -279,7 +330,7 @@ const displayController = (() => {
   }
 
   const finishGame = () => {
-
+    _playAgain.classList.add('active');
   }
 
   const hide = () => _gameScreen.classList.add('hidden');
@@ -348,7 +399,7 @@ const menuController = (() => {
       _changeDifficuty(player);
     }
     else {
-      player.buttons[1].innerText = "Computer";
+      player.buttons[1].innerText = "Bot";
       player.difficulty = -1;
     }
 
@@ -357,9 +408,9 @@ const menuController = (() => {
     }
   }
 
-  _playerOne.buttons.forEach((button, index) => button.addEventListener('click', _selectPlayer.bind(null, index, _playerOne)));
-  _playerTwo.buttons.forEach((button, index) => button.addEventListener('click', _selectPlayer.bind(null, index, _playerTwo)));
-  _startButton.addEventListener('click', gameController.startGame.bind(null, _playerOne.difficulty, _playerTwo.difficulty));
+  _playerOne.buttons.forEach((button, index) => button.addEventListener('click', () => _selectPlayer(index, _playerOne)));
+  _playerTwo.buttons.forEach((button, index) => button.addEventListener('click', () => _selectPlayer(index, _playerTwo)));
+  _startButton.addEventListener('click', () => gameController.startGame(_playerOne.difficulty, _playerTwo.difficulty));
 
   const hide = () => _menuScreen.classList.add('hidden');
 

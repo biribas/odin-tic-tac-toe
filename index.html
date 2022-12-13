@@ -18,7 +18,7 @@
             <div class="image ph-x-bold"></div>
             <div class="buttons">
               <div class="playerButton">Player</div>
-              <div class="botButton">Computer</div>
+              <div class="botButton">Bot</div>
             </div>
           </div> 
           <div class="versus">VS</div>
@@ -26,7 +26,7 @@
             <div class="image ph-circle-bold"></div>
             <div class="buttons">
               <div class="playerButton">Player</div>
-              <div class="botButton">Computer</div>
+              <div class="botButton">Bot</div>
             </div>
           </div> 
         </div>
@@ -36,16 +36,15 @@
       <section id="game-screen" class="screen hidden">
         <section id="scoreboard">
           <div id="player-one" class="player">
-            <span>Player One: </span>
+            <span class="name"></span>
             <span class="score"></span>
           </div> 
           <div id="player-two" class="player">
-            <span>Player Two: </span>
+            <span class="name"></span>
             <span class="score"></span>
           </div> 
         </section>
 
-        <h2 class="turn"></h2>
         <section id="gameboard">
           <div class="field"></div> 
           <div class="field"></div> 
@@ -58,9 +57,9 @@
           <div class="field"></div> 
         </section>   
 
-        <section id="round-counter">
-          Round <span id="current-round"></span>
-        </section>
+        <div id="round-counter"></div>
+
+        <button id="play-again">Play again</button>
       </section>
     </main>
   </body>
