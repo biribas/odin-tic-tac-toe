@@ -1,3 +1,7 @@
+Array.prototype.random = function () {
+  return this[Math.floor(Math.random() * this.length)];
+}
+
 const space = (() => {
   const obj = {
     empty: null,
@@ -69,10 +73,13 @@ const gameBoard = (() => {
 
   const isEmpty = () => _board.every(field => field === space.empty);
 
+  const emptyFields = () => _board.reduce((array, field, index) => field === space.empty ? [...array, index] : array, []);
+
   const obj = {
     addMark,
     clear,
-    isEmpty
+    isEmpty,
+    emptyFields
   }
 
   Object.defineProperty(obj, 'board', {get: _getBoard});
@@ -81,7 +88,7 @@ const gameBoard = (() => {
 })();
 
 const gameController = (() => {
-  const _maxScore = 1;
+  const _maxScore = 3;
   const _maxRounds = 10;
 
   let _player1;
@@ -238,7 +245,7 @@ const gameController = (() => {
 
     if (nextPlayer.isBot) {
       displayController.blockGameboard();
-      setTimeout(() => gameBoard.addMark(botController.findBestMove(_turn)), 500);
+      setTimeout(() => gameBoard.addMark(botController.move(nextPlayer.difficulty)), 500);
     }
     else {
       displayController.unblockGameboard();
@@ -269,7 +276,7 @@ const gameController = (() => {
 const botController = (() => {
   const _isMovesLeft = board => board.some(field => field === space.empty);
 
-  const _getScore = (board, isMax, depth) => {
+  const _getScore = (board, isMax, depth, difficulty) => {
     const k = (-1) ** isMax;
     let best = k * Infinity;
 
@@ -279,7 +286,7 @@ const botController = (() => {
 
       board[index] = isMax ? space.cross : space.nought;
 
-      const args = [best, _minimax(board, depth + 1, !isMax, index)];
+      const args = [best, _minimax(board, depth + 1, !isMax, index, difficulty)];
       best = isMax ? Math.max(...args) : Math.min(...args);
 
       board[index] = space.empty;
@@ -288,56 +295,74 @@ const botController = (() => {
     return best;
   }
 
-  const _minimax = (board, depth, isMax, lastMove) => {
+  const _minimax = (board, depth, isMax, lastMove, difficulty) => {
     const score = gameController.evaluate(board, lastMove);
 
-    if (score === 10)
-      return score - depth;
+    if (score !== 0) { 
+      const k = score / 10;
+      const result = score - k * depth;
 
-    if (score === -10)
-      return score + depth;
+      if (difficulty === 3)
+        return result;
+
+      const badLuck = Math.random() > 0.2 * difficulty + 0.5;
+      
+      return badLuck ? -result : result; 
+    }
 
     if (!_isMovesLeft(board))
       return 0;
 
-    return _getScore(board, isMax, depth);
+    return _getScore(board, isMax, depth, difficulty);
   }
 
-  const findBestMove = (turn) => {
-    const board = gameBoard.board;
-    const isMax = turn === space.cross; 
-    const k = (-1) ** isMax;
-
-    let bestScore = k * Infinity;
-    let bestMove;
-
-    if (gameBoard.isEmpty())  {
-      const corners = [0, 2, 6, 8];
-      const random = Math.floor(Math.random() * corners.length);
-      return corners[random];
+  const move = difficulty => {
+    // Easy mode
+    if (difficulty === 0) {
+      return gameBoard.emptyFields().random();
     }
+
+    const board = gameBoard.board;
+    const turn = gameController.turn;
+
+    const isMax = turn === space.cross; 
+
+    // First move
+    if (gameBoard.isEmpty() )  {
+      // Hard and Impossible
+      if (difficulty >= 2) {
+        const corners = [0, 2, 6, 8];
+        const random = Math.floor(Math.random() * corners.length);
+        return corners[random];
+      }
+      // Normal
+      return gameBoard.emptyFields().random();
+    }
+
+    const moves = [];
 
     for (let index = 0; index < 9; index++) {
       if (board[index] !== space.empty)
         continue;
 
       board[index] = turn;
-      const moveScore = _minimax(board, 0, !isMax, index)
-      board[index] = space.empty;
 
-      const condition = isMax ? moveScore > bestScore : moveScore < bestScore;
-      if (condition) {
-        bestMove = index;
-        bestScore = moveScore;
-      }
+      const moveScore = _minimax(board, 0, !isMax, index, difficulty);
+      board[index] = space.empty;
+      moves.push({index: index, score: moveScore});
     }
 
     displayController.removeHighlight();
 
-    return bestMove;
+    const scores = moves.map(obj => obj.score);
+    const bestScore = isMax ? Math.max(...scores) : Math.min(...scores);
+
+    const bestMoves = moves.filter(obj => obj.score === bestScore).map(obj => obj.index);
+
+    return bestMoves.random();
   }
 
-  return {findBestMove};
+  return {move};
 })();
 
 const scoreboardController = (() => {
