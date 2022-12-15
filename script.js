@@ -88,7 +88,7 @@ const gameBoard = (() => {
 })();
 
 const gameController = (() => {
-  const _maxScore = 3;
+  const _maxScore = 1;
   const _maxRounds = 10;
 
   let _player1;
@@ -216,6 +216,9 @@ const gameController = (() => {
   }
 
   const _resetGame = () => {
+    _player1.resetScore();
+    _player2.resetScore();
+
     scoreboardController.playerOne.score = 0;
     scoreboardController.playerTwo.score = 0;
 
@@ -232,12 +235,14 @@ const gameController = (() => {
   }
 
   const playAgain = () => {
-    _player1.resetScore();
-    _player2.resetScore();
-
     displayController.unblockGameboard();
     displayController.playAgain();
     _resetGame();
+  }
+
+  const changeMode = () => {
+    menuController.show();
+    displayController.hide();
   }
 
   const _setUpTurn = () => {
@@ -265,6 +270,7 @@ const gameController = (() => {
     handleDraw,
     startGame,
     playAgain,
+    changeMode,
     changeTurn
   }
 
@@ -440,10 +446,14 @@ const displayController = (() => {
   const _gameScreen = document.getElementById('game-screen');
   const _gameBoard = document.getElementById('gameboard');
   const _fields = _gameBoard.querySelectorAll('.field');
+
+  const _buttons = document.getElementById('end-game-buttons')
   const _playAgain = document.getElementById('play-again');
+  const _changeMode = document.getElementById('change-mode');
 
   _fields.forEach((field, index) => field.addEventListener('click', () => _editable && gameBoard.addMark(index)));
   _playAgain.addEventListener('click', gameController.playAgain);
+  _changeMode.addEventListener('click', gameController.changeMode);
 
   const addMark = place => {
     const index = +(gameController.turn === space.nought);
@@ -479,14 +489,18 @@ const displayController = (() => {
   }
 
   const finishGame = () => {
-    _playAgain.classList.add('active');
+    _buttons.classList.add('active');
   }
 
   const playAgain = () => {
-    _playAgain.classList.remove('active');
+    _buttons.classList.remove('active');
   }
 
-  const hide = () => _gameScreen.classList.add('hidden');
+  const hide = () => {
+    _gameScreen.classList.add('hidden');
+    _buttons.classList.remove('active');
+  }
+
   const show = () => _gameScreen.classList.remove('hidden');
 
   const blockGameboard = () => _editable = false;
@@ -571,7 +585,22 @@ const menuController = (() => {
   _playerTwo.buttons.forEach((button, index) => button.addEventListener('click', () => _selectPlayer(index, _playerTwo)));
   _startButton.addEventListener('click', () => gameController.startGame(_playerOne.difficulty, _playerTwo.difficulty));
 
-  const hide = () => _menuScreen.classList.add('hidden');
+  const hide = () => {
+    _menuScreen.classList.add('hidden');
+    _playerOne.buttons.forEach(button => button.classList.remove('selected'));
+    _playerTwo.buttons.forEach(button => button.classList.remove('selected'));
+
+    _playerOne.image.classList.remove(..._icons);
+    _playerTwo.image.classList.remove(..._icons);
+    
+    _playerOne.image.classList.add(icons.cross);
+    _playerTwo.image.classList.add(icons.nought);
+
+    _playerOne.selected = false;
+    _playerTwo.selected = false;
+
+    _startButton.classList.remove('active');
+  }
 
   const show = () => _menuScreen.classList.remove('hidden');
 

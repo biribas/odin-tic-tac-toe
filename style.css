@@ -73,12 +73,31 @@ body {
   border-top: var(--border-size) grey solid;
 }
 
+#end-game-buttons {
+  transform: scale(0);
+  height: auto;
+  width: min(30rem, 90%);
+  border-radius: 10px;
+  box-shadow: 2px 2px 5px grey;
+  overflow: hidden;
+  transition: transform 0.2s ease-in-out;
+}
+
+#play-again, #change-mode {
+  padding: 1rem;
+  font-size: 1.5rem;
+}
+
+#play-again {
+  border-right: 1px grey solid;
+}
+
 .buttons > * {
   flex: 1 1 0;
   display: flex;
   justify-content: center;
   align-items: center;
-  transition-property: flex-grow, background-color, color, font-size;
+  transition-property: flex-grow, background-color, color;
   transition-duration: 0.5s;
   transition-timing-function: ease;
   cursor: pointer;
@@ -100,7 +119,7 @@ body {
   background-color: lightgrey;
 }
 
-button#start-game, button#play-again {
+button#start-game {
   transform: scale(0);
   font-size: 2rem;
   padding: .5rem;
@@ -113,12 +132,12 @@ button#start-game, button#play-again {
   transition-timing-function: ease-in-out;
 }
 
-button#start-game:hover, button#play-again:hover {
+button#start-game:hover {
   background-color: lightgrey;
 }
 
-button#start-game.active, button#play-again.active {
-  transform: scale(1);
+.active {
+  transform: scale(1) !important;
 }
 
 .hidden {
