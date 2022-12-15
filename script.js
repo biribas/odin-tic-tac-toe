@@ -43,12 +43,11 @@ const Player = (sign, difficulty) => {
 
 const gameBoard = (() => {
   const _board = new Array(9);
-  let _editable = true;
 
   const _getBoard = () => _board;
 
   const addMark = place => {
-    if (_board[place] != space.empty || !_editable)
+    if (_board[place] != space.empty)
       return;
 
     _board[place] = gameController.turn;
@@ -68,14 +67,12 @@ const gameBoard = (() => {
 
   const clear = () => _board.fill(space.empty);
 
-  const blockGameboard = () => _editable = false;
-  const unblockGameboard = () => _editable = true;
+  const isEmpty = () => _board.every(field => field === space.empty);
 
   const obj = {
     addMark,
     clear,
-    blockGameboard,
-    unblockGameboard
+    isEmpty
   }
 
   Object.defineProperty(obj, 'board', {get: _getBoard});
@@ -83,9 +80,9 @@ const gameBoard = (() => {
   return obj;
 })();
 
-
 const gameController = (() => {
   const _maxScore = 1;
+  const _maxRounds = 10;
 
   let _player1;
   let _player2;
@@ -99,9 +96,8 @@ const gameController = (() => {
     const k = lastMove - lastMove % 3;
     const isWon = board[k] === board[k + 1] && board[k + 1] === board[k + 2];
 
-    if (isWon) {
+    if (isWon)
       displayController.highlightVictory(k, k + 1, k + 2);
-    }
 
     return isWon;
   }
@@ -110,9 +106,8 @@ const gameController = (() => {
     const k = lastMove % 3;
     const isWon = board[k] === board[k + 3] && board[k + 3] === board[k + 6];
 
-    if (isWon) {
+    if (isWon) 
       displayController.highlightVictory(k, k + 3, k + 6);
-    }
 
     return isWon;
   }
@@ -134,6 +129,16 @@ const gameController = (() => {
     return false;
   }
 
+  const evaluate = (board, lastMove) => {
+    if (!checkVictory(board, lastMove))
+      return 0;
+
+    if (board[lastMove] === space.cross)
+      return 10;
+    
+    return -10;
+  }
+
   const checkVictory = (board, lastMove) => {
     const args = [board, lastMove];
     return _checkRows(...args) || _checkColumns(...args) || _checkDiagonals(...args);
@@ -153,29 +158,30 @@ const gameController = (() => {
       scoreboardController.playerTwo.score = score;
     }
 
-    if (score === _maxScore) {
+    if (score === _maxScore)
       _finishGame();
-    }
-    else {
-      displayController.finishRound(++_round);
+    else
       _finishRound();
-    }
   }
 
   const handleDraw = () => {
     displayController.highlightDraw();
-    displayController.finishRound(++_round);
     _finishRound();
   }
 
   const _finishRound = () => {
-    gameController.changeTurn();
-    gameBoard.blockGameboard();
-    gameBoard.clear();
+    if (_currentRound === _maxRounds) {
+      _finishGame();
+    }
+    else {
+      gameBoard.clear();
+      displayController.blockGameboard();
+      displayController.finishRound(++_currentRound);
+    }
   }
 
   const _finishGame = () => {
-    gameBoard.blockGameboard();
+    displayController.blockGameboard();
     displayController.finishGame();
     scoreboardController.finishGame();
   }
@@ -195,7 +201,6 @@ const gameController = (() => {
   const startGame = (player1, player2) => {
     _player1 = Player(space.cross, player1);
     _player2 = Player(space.nought, player2);
-
     _setScoreBoardNames();
 
     _resetGame();
@@ -208,27 +213,45 @@ const gameController = (() => {
     scoreboardController.playerTwo.score = 0;
 
     _currentRound = 1;
-    _turn = _player1.sign;
-
     scoreboardController.round = _currentRound;
+
+    _turn = _player1.sign;
     scoreboardController.changeTurn();
 
     gameBoard.clear();
     displayController.clear();
+
+    _setUpTurn();
   }
 
   const playAgain = () => {
     _player1.resetScore();
     _player2.resetScore();
 
-    gameBoard.unblockGameboard();
+    displayController.unblockGameboard();
     displayController.playAgain();
     _resetGame();
   }
 
-  const changeTurn = () => _turn = _turn === space.cross ? space.nought : space.cross;
+  const _setUpTurn = () => {
+    const nextPlayer = _turn === space.cross ? _player1 : _player2; 
+
+    if (nextPlayer.isBot) {
+      displayController.blockGameboard();
+      setTimeout(() => gameBoard.addMark(botController.findBestMove(_turn)), 500);
+    }
+    else {
+      displayController.unblockGameboard();
+    }
+  }
+
+  const changeTurn = () => {
+    _turn = _turn === space.cross ? space.nought : space.cross;
+    _setUpTurn();
+  }
 
   const obj = {
+    evaluate,
     checkVictory,
     checkDraw,
     handleVictory,
@@ -243,6 +266,79 @@ const gameController = (() => {
   return obj;
 })();
 
+const botController = (() => {
+  const _isMovesLeft = board => board.some(field => field === space.empty);
+
+  const _getScore = (board, isMax, depth) => {
+    const k = (-1) ** isMax;
+    let best = k * Infinity;
+
+    for (let index = 0; index < 9; index++) {
+      if (board[index] !== space.empty)
+        continue;
+
+      board[index] = isMax ? space.cross : space.nought;
+
+      const args = [best, _minimax(board, depth + 1, !isMax, index)];
+      best = isMax ? Math.max(...args) : Math.min(...args);
+
+      board[index] = space.empty;
+    }
+
+    return best;
+  }
+
+  const _minimax = (board, depth, isMax, lastMove) => {
+    const score = gameController.evaluate(board, lastMove);
+
+    if (score === 10)
+      return score - depth;
+
+    if (score === -10)
+      return score + depth;
+
+    if (!_isMovesLeft(board))
+      return 0;
+
+    return _getScore(board, isMax, depth);
+  }
+
+  const findBestMove = (turn) => {
+    const board = gameBoard.board;
+    const isMax = turn === space.cross; 
+    const k = (-1) ** isMax;
+
+    let bestScore = k * Infinity;
+    let bestMove;
+
+    if (gameBoard.isEmpty())  {
+      const corners = [0, 2, 6, 8];
+      const random = Math.floor(Math.random() * corners.length);
+      return corners[random];
+    }
+
+    for (let index = 0; index < 9; index++) {
+      if (board[index] !== space.empty)
+        continue;
+
+      board[index] = turn;
+      const moveScore = _minimax(board, 0, !isMax, index)
+      board[index] = space.empty;
+
+      const condition = isMax ? moveScore > bestScore : moveScore < bestScore;
+      if (condition) {
+        bestMove = index;
+        bestScore = moveScore;
+      }
+    }
+
+    displayController.removeHighlight();
+
+    return bestMove;
+  }
+
+  return {findBestMove};
+})();
 
 const scoreboardController = (() => {
   const _players = document.querySelectorAll('.player');
@@ -276,8 +372,19 @@ const scoreboardController = (() => {
   }
 
   const finishGame = () => {
-    const winner = [..._players].find(player => player.classList.contains('marked')).querySelector('.name').innerText;
-    _roundCounter.innerText = `${winner} wins!`;
+    const playerOne = +_playerOne.score.innerText;
+    const playerTwo = +_playerTwo.score.innerText;
+
+    let str;
+    if (playerOne === playerTwo) {
+      str = "It's a tie..."
+    }
+    else {
+      const winner = playerOne > playerTwo ? _playerOne.name.innerText : _playerTwo.name.innerText;
+      str = `${winner} wins!`;
+    }
+
+    _roundCounter.innerText = str;
   }
 
   const playerOne = {};
@@ -301,16 +408,16 @@ const scoreboardController = (() => {
   return obj;
 })();
 
-
 const displayController = (() => {
   const _icons = [icons.cross, icons.nought];
+  let _editable = true;
 
   const _gameScreen = document.getElementById('game-screen');
   const _gameBoard = document.getElementById('gameboard');
   const _fields = _gameBoard.querySelectorAll('.field');
   const _playAgain = document.getElementById('play-again');
 
-  _fields.forEach((field, index) => field.addEventListener('click', () => gameBoard.addMark(index)));
+  _fields.forEach((field, index) => field.addEventListener('click', () => _editable && gameBoard.addMark(index)));
   _playAgain.addEventListener('click', gameController.playAgain);
 
   const addMark = place => {
@@ -320,8 +427,8 @@ const displayController = (() => {
 
   const clear = () => {
     _fields.forEach(field => field.classList.remove(..._icons));
-    _fields.forEach(field => field.classList.remove('victory'));
     _gameBoard.classList.remove('draw');
+    removeHighlight();
   }
 
   const highlightVictory = (...args) => {
@@ -334,10 +441,13 @@ const displayController = (() => {
     _gameBoard.classList.add('draw');
   }
 
+  const removeHighlight = () => _fields.forEach(field => field.classList.remove('victory'));
+
   const finishRound = round => {
     setTimeout(() => {
+      gameController.changeTurn();
       displayController.clear();
-      gameBoard.unblockGameboard();
+      displayController.unblockGameboard();
       scoreboardController.changeTurn();
       scoreboardController.round = round;
     }, 1500);
@@ -352,19 +462,24 @@ const displayController = (() => {
   }
 
   const hide = () => _gameScreen.classList.add('hidden');
-
   const show = () => _gameScreen.classList.remove('hidden');
+
+  const blockGameboard = () => _editable = false;
+  const unblockGameboard = () => _editable = true;
 
   return {
     addMark,
     clear,
     highlightVictory,
     highlightDraw,
+    removeHighlight,
     finishRound,
     finishGame,
     playAgain,
     hide,
-    show
+    show,
+    blockGameboard,
+    unblockGameboard
   }
 })();
 
@@ -437,6 +552,4 @@ const menuController = (() => {
 
   return {hide, show};
 })();
-
-// document.addEventListener('DOMContentLoaded', gameController.startGame());
 
