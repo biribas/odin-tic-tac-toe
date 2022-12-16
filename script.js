@@ -485,7 +485,6 @@ const displayController = (() => {
     setTimeout(() => {
       gameController.changeTurn();
       displayController.clear();
-      displayController.unblockGameboard();
       scoreboardController.changeTurn();
       scoreboardController.round = round;
     }, 1500);
