@@ -188,7 +188,7 @@ const gameController = (() => {
   const _finishGame = () => {
     displayController.blockGameboard();
     displayController.finishGame();
-    scoreboardController.finishGame();
+    scoreboardController.finishGame(_player1.score, _player2.score);
   }
 
   const _setScoreBoardNames = () => {
@@ -401,16 +401,13 @@ const scoreboardController = (() => {
     _players[index ^ 1].classList.remove('marked');
   }
 
-  const finishGame = () => {
-    const playerOne = +_playerOne.score.innerText;
-    const playerTwo = +_playerTwo.score.innerText;
-
+  const finishGame = (player1, player2) => {
     let str;
-    if (playerOne === playerTwo) {
+    if (player1 === player2) {
       str = "It's a tie..."
     }
     else {
-      const winner = playerOne > playerTwo ? _playerOne.name.innerText : _playerTwo.name.innerText;
+      const winner = player1 > player2 ? _playerOne.name.innerText : _playerTwo.name.innerText;
       str = `${winner} wins!`;
     }
 
