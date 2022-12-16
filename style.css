@@ -195,11 +195,12 @@ button#start-game.active {
 }
 
 .player {
-  padding: 1rem;
-  border-radius: 5rem;
+  padding: .5rem 1rem;
+  border-radius: 25px;
   box-shadow: 2px 2px 5px grey;
   min-width: 8rem;
   text-align: center;
+  transition: background-color 0.2s ease-in-out;
 }
 
 .name::after {
@@ -240,6 +241,7 @@ button#start-game.active {
   border-right: 2px solid black;
   height: var(--field-size);
   width: var(--field-size);
+  transition: color 0.2s ease-in-out;
 }
 
 .field:nth-child(3n) {
