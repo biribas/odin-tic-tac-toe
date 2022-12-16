@@ -472,9 +472,7 @@ const displayController = (() => {
     }
   }
 
-  const highlightDraw = () => {
-    _gameBoard.classList.add('draw');
-  }
+  const highlightDraw = () => _gameBoard.classList.add('draw');
 
   const removeHighlight = () => _fields.forEach(field => field.classList.remove('victory'));
 
@@ -488,13 +486,9 @@ const displayController = (() => {
     }, 1500);
   }
 
-  const finishGame = () => {
-    _buttons.classList.add('active');
-  }
+  const finishGame = () => _buttons.classList.add('active');
 
-  const playAgain = () => {
-    _buttons.classList.remove('active');
-  }
+  const playAgain = () => _buttons.classList.remove('active');
 
   const hide = () => {
     _gameScreen.classList.add('hidden');

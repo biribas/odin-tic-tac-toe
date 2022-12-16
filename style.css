@@ -13,6 +13,7 @@
 button {
   border: none;
   background-color: transparent;
+  font-size: inherit;
   font-family: inherit;
   font-weight: bolder;
 }
@@ -65,31 +66,54 @@ body {
 
 .buttons {
   display: flex;
-  height: 4rem;
-  width: 100%;
   font-size: 1.5rem;
   font-weight: bolder;
   background-color: snow;
   border-top: var(--border-size) grey solid;
 }
 
+.card .buttons {
+  width: 100%;
+  height: 4rem;
+}
+
 #end-game-buttons {
-  transform: scale(0);
-  height: auto;
-  width: min(30rem, 90%);
+  width: min(15rem, 90%);
   border-radius: 10px;
   box-shadow: 2px 2px 5px grey;
   overflow: hidden;
-  transition: transform 0.2s ease-in-out;
+  transition: width 0.2s ease-in-out;
 }
 
-#play-again, #change-mode {
+#end-game-buttons.active {
+  width: min(30rem, 90%);
+}
+
+#change-mode {
   padding: 1rem;
-  font-size: 1.5rem;
 }
 
 #play-again {
+  flex-grow: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  transition-property: flex-grow, border-right, padding;
+  transition-duration: 0.2s;
+  transition-timing-function: ease-in-out;
+}
+
+#end-game-buttons.active #play-again {
   border-right: 1px grey solid;
+  flex-grow: 1;
+  padding: 1rem;
+}
+
+#end-game-buttons.active > *:hover {
+  flex-grow: 1.1 !important;  
+}
+
+#end-game-buttons > *:hover {
+  background-color: lightgrey;
 }
 
 .buttons > * {
@@ -97,7 +121,7 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  transition-property: flex-grow, background-color, color;
+  transition-property: flex-grow, background-color, color, font-size;
   transition-duration: 0.5s;
   transition-timing-function: ease;
   cursor: pointer;
@@ -114,7 +138,7 @@ body {
   font-size: 1.8rem;
 }
 
-.buttons > *:not(.selected):hover {
+.card .buttons > *:not(.selected):hover {
   flex-grow: 1.1;
   background-color: lightgrey;
 }
@@ -136,8 +160,8 @@ button#start-game:hover {
   background-color: lightgrey;
 }
 
-.active {
-  transform: scale(1) !important;
+button#start-game.active {
+  transform: scale(1);
 }
 
 .hidden {
