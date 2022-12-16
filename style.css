@@ -32,6 +32,7 @@ main {
   display: flex;
   flex-direction: column;
   align-items: center;
+  padding: 3rem;
 }
 
 #main-menu {
@@ -40,7 +41,6 @@ main {
 
 #title {
   font-size: 4rem;
-  padding-top: 3rem;
 }
 
 #container {
@@ -85,6 +85,7 @@ main {
 
 #end-game-buttons {
   width: min(15rem, 90%);
+  margin-top: 1rem;
   border-radius: 10px;
   box-shadow: 2px 2px 5px grey;
   overflow: hidden;
@@ -177,8 +178,6 @@ button#start-game.active {
 #scoreboard {
   font-size: 2rem;
   font-weight: bolder;
-  padding-top: 2rem;
-  padding-bottom: 4rem;
   display: flex;
   gap: 6rem;
 }
@@ -210,11 +209,11 @@ button#start-game.active {
 #gameboard {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
+  padding-top: 3rem;
+  padding-bottom: 2rem;
 }
 
 #round-counter {
-  padding-top: 2rem;
-  padding-bottom: 1rem;
   font-size: 2rem;
   font-weight: bolder;
 }
@@ -242,8 +241,7 @@ button#start-game.active {
 
 footer {
   text-align: center;
-  padding: 0rem 1rem;
-  padding-bottom: 1rem;
+  padding: .5rem;
   font-size: 1.2rem;
 }
 
