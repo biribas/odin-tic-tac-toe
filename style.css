@@ -8,6 +8,7 @@
 * {
   padding: 0;
   margin: 0;
+  box-sizing: border-box;
 }
 
 button {
@@ -40,13 +41,16 @@ main {
 }
 
 #title {
+  text-align: center;
   font-size: 4rem;
 }
 
 #container {
   display: flex;
   align-items: center;
-  gap: 3rem;
+  justify-content: space-between;
+  max-width: 60rem;
+  width: 100%;
 }
 
 .card {
@@ -54,7 +58,7 @@ main {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  font-size: 20rem;
+  font-size: min(20rem, 30vw);
   border-radius: 10px;
   box-shadow: 2px 2px 5px grey;
   border: var(--border-size) grey solid;
@@ -68,6 +72,7 @@ main {
 .versus {
   font-size: 4rem;
   font-weight: bolder;
+  padding: 1rem;
 }
 
 .buttons {
@@ -242,7 +247,7 @@ button#start-game.active {
 footer {
   text-align: center;
   padding: .5rem;
-  font-size: 1.2rem;
+  font-size: 1.5rem;
 }
 
 footer a {
@@ -266,3 +271,20 @@ footer a::after {
 footer a:hover::after {
   width: 100%;
 }
+
+@media only screen and (max-width: 800px) {
+  #container {
+    flex-direction: column;
+  }
+
+  .card {
+    font-size: min(20rem, 60vw);
+  }
+}
+
+@media only screen and (max-width: 500px) {
+  #title {
+    font-size: 3rem;
+  }
+}
+
