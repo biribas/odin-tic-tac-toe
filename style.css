@@ -20,6 +20,12 @@ button {
 
 body {
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  flex: 1;
 }
 
 .screen {
@@ -234,3 +240,31 @@ button#start-game.active {
   border-bottom: none;
 }
 
+footer {
+  text-align: center;
+  padding: 0rem 1rem;
+  padding-bottom: 1rem;
+  font-size: 1.2rem;
+}
+
+footer a {
+  position: relative;
+  color: black;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+footer a::after {
+  content: '';
+  position: absolute;
+  bottom: 0.1rem;
+  left: 0;
+  border-bottom: 1px solid black;
+  width: 0%;
+  transition: width .1s;
+  pointer-events: none;
+}
+
+footer a:hover::after {
+  width: 100%;
+}
