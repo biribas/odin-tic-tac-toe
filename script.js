@@ -25,19 +25,22 @@ const Player = (sign, difficulty) => {
   const _sign = sign;
   const _isBot = difficulty !== -1;
   let _score = 0;
+  let _paused = false;
 
   const increaseScore = () => ++_score;
   const resetScore = () => _score = 0;
+  const pause = () => _paused = true;
 
   const obj = {
     increaseScore,
-    resetScore
+    resetScore,
+    pause
   }
 
-  if (_isBot) {
+  if (_isBot)
     Object.defineProperty(obj, 'difficulty', {get: () => difficulty});
-  }
 
+  Object.defineProperty(obj, 'paused', {get: () => _paused});
   Object.defineProperty(obj, 'isBot', {get: () => _isBot});
   Object.defineProperty(obj, 'score', {get: () => _score});
   Object.defineProperty(obj, 'sign', {get: () => _sign});
@@ -48,10 +51,8 @@ const Player = (sign, difficulty) => {
 const gameBoard = (() => {
   const _board = new Array(9);
 
-  const _getBoard = () => _board;
-
   const addMark = place => {
-    if (_board[place] != space.empty)
+    if (_board[place] !== space.empty)
       return;
 
     _board[place] = gameController.turn;
@@ -82,7 +83,7 @@ const gameBoard = (() => {
     emptyFields
   }
 
-  Object.defineProperty(obj, 'board', {get: _getBoard});
+  Object.defineProperty(obj, 'board', {get: () => _board});
 
   return obj;
 })();
@@ -96,8 +97,6 @@ const gameController = (() => {
 
   let _turn;
   let _currentRound;
-
-  const _getTurn = () => _turn;
 
   const _checkRows = (board, lastMove) => {
     const k = lastMove - lastMove % 3;
@@ -132,7 +131,6 @@ const gameController = (() => {
         return true;
       }
     }
-
     return false;
   }
 
@@ -215,6 +213,11 @@ const gameController = (() => {
     displayController.show();
   }
 
+  const pauseBots = () => {
+    _player1.pause();
+    _player2.pause();
+  }
+
   const _resetGame = () => {
     _player1.resetScore();
     _player2.resetScore();
@@ -227,11 +230,10 @@ const gameController = (() => {
 
     _turn = _player1.sign;
     scoreboardController.changeTurn();
+    _setUpTurn();
 
     gameBoard.clear();
     displayController.clear();
-
-    _setUpTurn();
   }
 
   const playAgain = () => {
@@ -240,15 +242,13 @@ const gameController = (() => {
     _resetGame();
   }
 
-  const changeMode = () => {
-    menuController.show();
-    displayController.hide();
-  }
-
   const _setUpTurn = () => {
     const nextPlayer = _turn === space.cross ? _player1 : _player2; 
 
-    if (nextPlayer.isBot) {
+    if (nextPlayer.paused)
+      return;
+
+    if (nextPlayer.isBot && !nextPlayer.paused) {
       displayController.blockGameboard();
       setTimeout(() => gameBoard.addMark(botController.move(nextPlayer.difficulty)), 500);
     }
@@ -269,12 +269,12 @@ const gameController = (() => {
     handleVictory,
     handleDraw,
     startGame,
+    pauseBots,
     playAgain,
-    changeMode,
     changeTurn
   }
 
-  Object.defineProperty(obj, 'turn', {get: _getTurn});
+  Object.defineProperty(obj, 'turn', {get: () => _turn});
 
   return obj;
 })();
@@ -373,7 +373,6 @@ const botController = (() => {
 
 const scoreboardController = (() => {
   const _players = document.querySelectorAll('.player');
-
   const _roundCounter = document.getElementById('round-counter');
 
   const _playerOne = {
@@ -433,15 +432,14 @@ const scoreboardController = (() => {
     playerTwo
   }
 
-  Object.defineProperty(obj, 'playerTwoName', {set: _setPlayerTwoScore});
   Object.defineProperty(obj, 'round', {set: _setRound});
 
   return obj;
 })();
 
 const displayController = (() => {
-  const _icons = [icons.cross, icons.nought];
   let _editable = true;
+  const _icons = [icons.cross, icons.nought];
 
   const _gameScreen = document.getElementById('game-screen');
   const _gameBoard = document.getElementById('gameboard');
@@ -452,8 +450,13 @@ const displayController = (() => {
   const _changeMode = document.getElementById('change-mode');
 
   _fields.forEach((field, index) => field.addEventListener('click', () => _editable && gameBoard.addMark(index)));
+
   _playAgain.addEventListener('click', gameController.playAgain);
-  _changeMode.addEventListener('click', gameController.changeMode);
+
+  _changeMode.addEventListener('click', () => {
+    hide();
+    menuController.show();
+  });
 
   const addMark = place => {
     const index = +(gameController.turn === space.nought);
@@ -462,7 +465,6 @@ const displayController = (() => {
 
   const clear = () => {
     _fields.forEach(field => field.classList.remove(..._icons));
-    _gameBoard.classList.remove('draw');
     removeHighlight();
   }
 
@@ -474,7 +476,10 @@ const displayController = (() => {
 
   const highlightDraw = () => _gameBoard.classList.add('draw');
 
-  const removeHighlight = () => _fields.forEach(field => field.classList.remove('victory'));
+  const removeHighlight = () => {
+    _gameBoard.classList.remove('draw');
+    _fields.forEach(field => field.classList.remove('victory'));
+  }
 
   const finishRound = round => {
     setTimeout(() => {
@@ -491,6 +496,7 @@ const displayController = (() => {
   const playAgain = () => _buttons.classList.remove('active');
 
   const hide = () => {
+    gameController.pauseBots();
     _gameScreen.classList.add('hidden');
     _buttons.classList.remove('active');
   }
@@ -527,6 +533,7 @@ const menuController = (() => {
   const _difficulties = ["Easy", "Normal", "Hard", "Impossible"];
 
   const _playerOne = {
+    sign: icons.cross,
     image: _playerOneCard.querySelector('.image'),
     buttons: [
       _playerOneCard.querySelector('.playerButton'),
@@ -537,6 +544,7 @@ const menuController = (() => {
   }
 
   const _playerTwo = {
+    sign: icons.nought,
     image: _playerTwoCard.querySelector('.image'),
     buttons: [
       _playerTwoCard.querySelector('.playerButton'),
@@ -566,7 +574,7 @@ const menuController = (() => {
       _changeDifficuty(player);
     }
     else {
-      player.buttons[1].innerText = "Bot";
+      player.buttons[1].innerText = 'Bot';
       player.difficulty = -1;
     }
 
@@ -579,20 +587,19 @@ const menuController = (() => {
   _playerTwo.buttons.forEach((button, index) => button.addEventListener('click', () => _selectPlayer(index, _playerTwo)));
   _startButton.addEventListener('click', () => gameController.startGame(_playerOne.difficulty, _playerTwo.difficulty));
 
+  const _resetCard = player => {
+    player.buttons.forEach(button => button.classList.remove('selected'));
+    player.buttons[1].innerText = 'Bot';
+    player.image.classList.remove(..._icons);
+    player.image.classList.add(player.sign);
+    player.selected = false;
+    player.difficulty = -1;
+  }
+
   const hide = () => {
+    _resetCard(_playerOne);
+    _resetCard(_playerTwo);
     _menuScreen.classList.add('hidden');
-    _playerOne.buttons.forEach(button => button.classList.remove('selected'));
-    _playerTwo.buttons.forEach(button => button.classList.remove('selected'));
-
-    _playerOne.image.classList.remove(..._icons);
-    _playerTwo.image.classList.remove(..._icons);
-    
-    _playerOne.image.classList.add(icons.cross);
-    _playerTwo.image.classList.add(icons.nought);
-
-    _playerOne.selected = false;
-    _playerTwo.selected = false;
-
     _startButton.classList.remove('active');
   }
 
