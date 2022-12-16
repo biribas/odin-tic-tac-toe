@@ -15,7 +15,7 @@ const icons = (() => {
   const obj = {
     cross: "ph-x-bold",
     nought: "ph-circle-bold",
-    human: "ph-person",
+    human: "ph-person-simple",
     robot: "ph-robot"
   }
   return Object.freeze(obj);
@@ -438,7 +438,7 @@ const scoreboardController = (() => {
 })();
 
 const displayController = (() => {
-  let _editable = true;
+  let _blocked = true;
   const _icons = [icons.cross, icons.nought];
 
   const _gameScreen = document.getElementById('game-screen');
@@ -449,7 +449,7 @@ const displayController = (() => {
   const _playAgain = document.getElementById('play-again');
   const _changeMode = document.getElementById('change-mode');
 
-  _fields.forEach((field, index) => field.addEventListener('click', () => _editable && gameBoard.addMark(index)));
+  _fields.forEach((field, index) => field.addEventListener('click', () => !_blocked && gameBoard.addMark(index)));
 
   _playAgain.addEventListener('click', gameController.playAgain);
 
@@ -503,8 +503,14 @@ const displayController = (() => {
 
   const show = () => _gameScreen.classList.remove('hidden');
 
-  const blockGameboard = () => _editable = false;
-  const unblockGameboard = () => _editable = true;
+  const blockGameboard = () => {
+    _blocked = true;
+    _gameBoard.classList.add('blocked');
+  }
+  const unblockGameboard = () => {
+    _blocked = false;
+    _gameBoard.classList.remove('blocked');
+  } 
 
   return {
     addMark,

@@ -212,18 +212,19 @@ button#start-game.active {
 }
 
 .victory {
-  color: lightgreen;
+  color: green;
 }
 
 .draw {
-  color: #FFD300;
+  color: #ECC403;
 }
 
 #gameboard {
-  --field-size: min(10rem, 30vw);
+  --field-size: min(10rem, 28vw);
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   padding: 3rem 0;
+  gap: 1rem;
 }
 
 #round-counter {
@@ -237,19 +238,19 @@ button#start-game.active {
   justify-content: center;
   align-items: center;
   font-size: calc(0.9 * var(--field-size));
-  border-bottom: 2px solid black;
-  border-right: 2px solid black;
   height: var(--field-size);
   width: var(--field-size);
   transition: color 0.2s ease-in-out;
+  background-color: #e8e8e8;
+  border-radius: 10px;
 }
 
-.field:nth-child(3n) {
-  border-right: none;
+#gameboard.blocked .field {
+  cursor: default;
 }
 
-.field:nth-last-child(-n + 3) {
-  border-bottom: none;
+#gameboard:not(.blocked) .field:hover {
+  background-color: lightgrey;
 }
 
 footer {
