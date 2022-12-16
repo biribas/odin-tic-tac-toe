@@ -89,16 +89,19 @@ main {
 }
 
 #end-game-buttons {
-  width: min(15rem, 90%);
+  height: 4rem;
+  width: min(15rem, 1000%);
   margin-top: 1rem;
   border-radius: 10px;
   box-shadow: 2px 2px 5px grey;
   overflow: hidden;
-  transition: width 0.2s ease-in-out;
+  transition-property: width;
+  transition-duration: 0.2s;
+  transition-timing-function: ease-in-out;
 }
 
 #end-game-buttons.active {
-  width: min(30rem, 90%);
+  width: min(30rem, 100%);
 }
 
 #change-mode {
@@ -137,6 +140,7 @@ main {
   transition-duration: 0.5s;
   transition-timing-function: ease;
   cursor: pointer;
+  line-height: 2rem;
 }
 
 .playerButton {
@@ -184,7 +188,10 @@ button#start-game.active {
   font-size: 2rem;
   font-weight: bolder;
   display: flex;
-  gap: 6rem;
+  justify-content: space-between;
+  gap: 3rem;
+  width: 100%;
+  max-width: 630px;
 }
 
 .player {
@@ -212,10 +219,10 @@ button#start-game.active {
 }
 
 #gameboard {
+  --field-size: min(10rem, 30vw);
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  padding-top: 3rem;
-  padding-bottom: 2rem;
+  padding: 3rem 0;
 }
 
 #round-counter {
@@ -228,8 +235,7 @@ button#start-game.active {
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 9rem;
-  --field-size: 10rem;
+  font-size: calc(0.9 * var(--field-size));
   border-bottom: 2px solid black;
   border-right: 2px solid black;
   height: var(--field-size);
@@ -246,7 +252,7 @@ button#start-game.active {
 
 footer {
   text-align: center;
-  padding: .5rem;
+  padding: .5rem 1rem;
   font-size: 1.5rem;
 }
 
@@ -280,11 +286,50 @@ footer a:hover::after {
   .card {
     font-size: min(20rem, 60vw);
   }
+
+  #scoreboard {
+    flex-direction: column;
+    gap: 1rem;
+    width: auto;
+  }
+}
+
+@media only screen and (max-width: 600px) {
+  #end-game-buttons {
+    flex-direction: column;
+    height: 6rem;
+  }
+
+  #end-game-buttons.active {
+    width: min(15rem, 100%);
+  }
+
+  #end-game-buttons.active #play-again {
+    padding: .5rem;
+    border-right: 0;
+    border-bottom: 1px solid grey;
+  }
+
+  #end-game-buttons.active > *:hover {
+    flex-grow: 1.0 !important;  
+  }
+
+  #change-mode {
+    padding: .5rem;
+  }
 }
 
 @media only screen and (max-width: 500px) {
   #title {
     font-size: 3rem;
+  }
+
+  #scoreboard, #round-counter {
+    font-size: 1.5rem;
+  }
+
+  footer {
+    font-size: 1.2rem;
   }
 }
 
