@@ -89,7 +89,7 @@ const gameBoard = (() => {
 })();
 
 const gameController = (() => {
-  const _maxScore = 1;
+  const _maxScore = 3;
   const _maxRounds = 10;
 
   let _player1;
