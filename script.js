@@ -282,7 +282,7 @@ const gameController = (() => {
 const botController = (() => {
   const _isMovesLeft = board => board.some(field => field === space.empty);
 
-  const _getScore = (board, isMax, depth, difficulty) => {
+  const _getScore = (board, isMax, depth) => {
     const k = (-1) ** isMax;
     let best = k * Infinity;
 
@@ -292,7 +292,7 @@ const botController = (() => {
 
       board[index] = isMax ? space.cross : space.nought;
 
-      const args = [best, _minimax(board, depth + 1, !isMax, index, difficulty)];
+      const args = [best, _minimax(board, depth + 1, !isMax, index)];
       best = isMax ? Math.max(...args) : Math.min(...args);
 
       board[index] = space.empty;
@@ -301,25 +301,16 @@ const botController = (() => {
     return best;
   }
 
-  const _minimax = (board, depth, isMax, lastMove, difficulty) => {
+  const _minimax = (board, depth, isMax, lastMove) => {
     const score = gameController.evaluate(board, lastMove);
 
-    if (score !== 0) { 
-      const k = score / 10;
-      const result = score - k * depth;
-
-      if (difficulty === 3)
-        return result;
-
-      const badLuck = Math.random() > 0.2 * difficulty + 0.5;
-      
-      return badLuck ? -result : result; 
-    }
+    if (score !== 0)
+      return score - Math.sign(score) * depth;
 
     if (!_isMovesLeft(board))
       return 0;
 
-    return _getScore(board, isMax, depth, difficulty);
+    return _getScore(board, isMax, depth);
   }
 
   const move = difficulty => {
@@ -334,14 +325,19 @@ const botController = (() => {
     const isMax = turn === space.cross; 
 
     // First move
-    if (gameBoard.isEmpty() )  {
-      // Hard and Impossible
-      if (difficulty >= 2) {
-        const corners = [0, 2, 6, 8];
-        const random = Math.floor(Math.random() * corners.length);
-        return corners[random];
+    if (gameBoard.isEmpty())  {
+      // Normal and Hard
+      if (difficulty < 3) {
+        return gameBoard.emptyFields().random();
       }
-      // Normal
+      // Impossible
+      const corners = [0, 2, 6, 8];
+      const random = Math.floor(Math.random() * corners.length);
+      return corners[random];
+    }
+
+    // Difficulty handler
+    if (difficulty == 1 && Math.random() > 0.5 || difficulty == 2 && Math.random() > 0.8) {
       return gameBoard.emptyFields().random();
     }
 
@@ -353,7 +349,7 @@ const botController = (() => {
 
       board[index] = turn;
 
-      const moveScore = _minimax(board, 0, !isMax, index, difficulty);
+      const moveScore = _minimax(board, 0, !isMax, index);
       board[index] = space.empty;
       moves.push({index: index, score: moveScore});
     }
@@ -362,7 +358,6 @@ const botController = (() => {
 
     const scores = moves.map(obj => obj.score);
     const bestScore = isMax ? Math.max(...scores) : Math.min(...scores);
-
     const bestMoves = moves.filter(obj => obj.score === bestScore).map(obj => obj.index);
 
     return bestMoves.random();
