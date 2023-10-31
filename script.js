@@ -268,7 +268,7 @@ const gameController = (() => {
 const botController = (() => {
   const _actions = board => board.reduce((array, field, index) => field === space.empty ? [...array, index] : array, []);
 
-  const _minimax = (board, isMax, depth, lastMove) => {
+  const _minimax = (board, isMax, alpha, beta, depth, lastMove) => {
     if (gameController.checkVictory(board, lastMove)) {
       const score = board[lastMove] === space.cross ? 10 : -10;
       return score - Math.sign(score) * depth;
@@ -279,12 +279,20 @@ const botController = (() => {
     }
 
     let best = (-1) ** isMax * Infinity;
-
+    
     for (const action of _actions(board)) {
       board[action] = isMax ? space.cross : space.nought;
-      const args = [best, _minimax(board, !isMax, depth + 1, action)];
-      best = isMax ? Math.max(...args) : Math.min(...args);
+      const args = [best, _minimax(board, !isMax, alpha, beta, depth + 1, action)];
       board[action] = space.empty;
+
+      best = isMax ? Math.max(...args) : Math.min(...args);
+
+      if (isMax)
+        alpha = Math.max(alpha, best);
+      else
+        beta = Math.min(beta, best);
+
+      if (alpha >= beta) break;
     }
 
     return best;
@@ -321,7 +329,7 @@ const botController = (() => {
 
     for (const action of _actions(board)) {
       board[action] = turn;
-      const moveScore = _minimax(board, !isMax, 0, action);
+      const moveScore = _minimax(board, !isMax, -Infinity, Infinity, 0, action);
       board[action] = space.empty;
       moves.push({index: action, score: moveScore});
     }
