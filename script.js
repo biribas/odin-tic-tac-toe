@@ -61,7 +61,7 @@ const gameBoard = (() => {
     if (gameController.checkVictory(_board, place)) {
       gameController.handleVictory();
     }
-    else if (gameController.checkDraw(_board)) {
+    else if (gameController.isFull(_board)) {
       gameController.handleDraw();
     }
     else {
@@ -74,16 +74,13 @@ const gameBoard = (() => {
 
   const isEmpty = () => _board.every(field => field === space.empty);
 
-  const emptyFields = () => _board.reduce((array, field, index) => field === space.empty ? [...array, index] : array, []);
-
   const obj = {
     addMark,
     clear,
     isEmpty,
-    emptyFields
   }
 
-  Object.defineProperty(obj, 'board', {get: () => _board});
+  Object.defineProperty(obj, 'board', {get: () => [..._board]});
 
   return obj;
 })();
@@ -134,22 +131,12 @@ const gameController = (() => {
     return false;
   }
 
-  const evaluate = (board, lastMove) => {
-    if (!checkVictory(board, lastMove))
-      return 0;
-
-    if (board[lastMove] === space.cross)
-      return 10;
-    
-    return -10;
-  }
-
   const checkVictory = (board, lastMove) => {
     const args = [board, lastMove];
     return _checkRows(...args) || _checkColumns(...args) || _checkDiagonals(...args);
   }
 
-  const checkDraw = board => !board.some(field => field === space.empty);
+  const isFull = board => !board.some(field => field === space.empty);
 
   const handleVictory = () => {
     let score;
@@ -263,9 +250,8 @@ const gameController = (() => {
   }
 
   const obj = {
-    evaluate,
     checkVictory,
-    checkDraw,
+    isFull,
     handleVictory,
     handleDraw,
     startGame,
@@ -280,55 +266,43 @@ const gameController = (() => {
 })();
 
 const botController = (() => {
-  const _isMovesLeft = board => board.some(field => field === space.empty);
+  const _actions = board => board.reduce((array, field, index) => field === space.empty ? [...array, index] : array, []);
 
-  const _getScore = (board, isMax, depth) => {
-    const k = (-1) ** isMax;
-    let best = k * Infinity;
+  const _minimax = (board, isMax, depth, lastMove) => {
+    if (gameController.checkVictory(board, lastMove)) {
+      const score = board[lastMove] === space.cross ? 10 : -10;
+      return score - Math.sign(score) * depth;
+    }
 
-    for (let index = 0; index < 9; index++) {
-      if (board[index] !== space.empty)
-        continue;
+    if (gameController.isFull(board)) {
+      return 0;
+    }
 
-      board[index] = isMax ? space.cross : space.nought;
+    let best = (-1) ** isMax * Infinity;
 
-      const args = [best, _minimax(board, depth + 1, !isMax, index)];
+    for (const action of _actions(board)) {
+      board[action] = isMax ? space.cross : space.nought;
+      const args = [best, _minimax(board, !isMax, depth + 1, action)];
       best = isMax ? Math.max(...args) : Math.min(...args);
-
-      board[index] = space.empty;
+      board[action] = space.empty;
     }
 
     return best;
   }
 
-  const _minimax = (board, depth, isMax, lastMove) => {
-    const score = gameController.evaluate(board, lastMove);
-
-    if (score !== 0)
-      return score - Math.sign(score) * depth;
-
-    if (!_isMovesLeft(board))
-      return 0;
-
-    return _getScore(board, isMax, depth);
-  }
-
   const move = difficulty => {
+    const board = gameBoard.board;
+
     // Easy mode
     if (difficulty === 0) {
-      return gameBoard.emptyFields().random();
+      return _actions(board).random();
     }
-
-    const board = gameBoard.board;
-    const turn = gameController.turn;
-
-    const isMax = turn === space.cross; 
 
     // First move
     if (gameBoard.isEmpty())  {
       // Normal and Hard
       if (difficulty < 3) {
-        return gameBoard.emptyFields().random();
+        return _actions(board).random();
       }
       // Impossible
       const corners = [0, 2, 6, 8];
@@ -338,20 +312,18 @@ const botController = (() => {
 
     // Difficulty handler
     if (difficulty == 1 && Math.random() > 0.5 || difficulty == 2 && Math.random() > 0.8) {
-      return gameBoard.emptyFields().random();
+      return _actions(board).random();
     }
 
     const moves = [];
+    const turn = gameController.turn;
+    const isMax = turn === space.cross; 
 
-    for (let index = 0; index < 9; index++) {
-      if (board[index] !== space.empty)
-        continue;
-
-      board[index] = turn;
-
-      const moveScore = _minimax(board, 0, !isMax, index);
-      board[index] = space.empty;
-      moves.push({index: index, score: moveScore});
+    for (const action of _actions(board)) {
+      board[action] = turn;
+      const moveScore = _minimax(board, !isMax, 0, action);
+      board[action] = space.empty;
+      moves.push({index: action, score: moveScore});
     }
 
     displayController.removeHighlight();
